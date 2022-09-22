@@ -272,7 +272,7 @@ static void config_usb_mode(void) {
 
   usb_device_init();
   // enable the device_periodic_task, which controls LED and Touch sensing
-  // device_loop_enable = 1;
+  device_loop_enable = 1;
 }
 /* USER CODE END 0 */
 
@@ -332,7 +332,7 @@ int main(void) {
 
     /* USER CODE BEGIN 3 */
     if (in_nfc_mode) {
-      nfc_loop();
+      // nfc_loop();
       if (detect_usb()) { // USB plug-in
         config_usb_mode();
         in_nfc_mode = 0;
@@ -487,7 +487,7 @@ static void MX_GPIO_Init(void) {
   /*Configure GPIO pin : TOUCH_Pin */
   GPIO_InitStruct.Pin = TOUCH_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(TOUCH_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
