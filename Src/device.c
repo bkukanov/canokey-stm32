@@ -112,7 +112,8 @@ static GPIO_PinState GPIO_Touched(void) {
 
 //   if (counter > measure_touch) measure_touch = counter;
 //   return counter > touch_threshold ? GPIO_PIN_SET : GPIO_PIN_RESET;
-  return (0  == (LL_GPIO_ReadInputPort(TOUCH_GPIO_Port) & TOUCH_Pin));;
+  // return (0  == (LL_GPIO_ReadInputPort(TOUCH_GPIO_Port) & TOUCH_Pin));;
+  return !HAL_GPIO_ReadPin(TOUCH_GPIO_Port, TOUCH_Pin);
 
 }
 
