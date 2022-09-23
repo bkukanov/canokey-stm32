@@ -41,12 +41,18 @@ add_custom_target(gitrev
         COMMAND git describe --always --tags --long --abbrev=8 --dirty >> ${CMAKE_CURRENT_SOURCE_DIR}/${gitrev}
         )
 
+set_target_properties(canokey PROPERTIES
+    SUFFIX .elf
+    )
+
 add_custom_command(TARGET canokey POST_BUILD
-    COMMAND "${CROSS_COMPILE}size" canokey)
+    COMMAND "${CROSS_COMPILE}size" canokey.elf)
+# add_custom_command(TARGET canokey POST_BUILD
+#     COMMAND "${CROSS_COMPILE}size" canokey)
 
 add_custom_target(canokey.bin
     DEPENDS canokey
-    COMMAND "${CROSS_COMPILE}objcopy" -O binary -S canokey canokey.bin)
+    COMMAND "${CROSS_COMPILE}objcopy" -O binary -S canokey.elf canokey.bin)
 
 add_custom_target(dfu
     DEPENDS canokey.bin
