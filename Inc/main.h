@@ -47,7 +47,7 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-#define DBG_UART hlpuart1
+#define DBG_UART huart1
 #define FM_SPI hspi1
 /* USER CODE END EM */
 
@@ -73,7 +73,7 @@ void SystemClock_CustomConfig(bool nfc_low_power, bool pll_reconfig);
 #define HW_CFG_Port GPIOB
 #define HW_CFG0_Pin GPIO_PIN_4
 #define HW_CFG1_Pin GPIO_PIN_5
-#define HW_CFG2_Pin GPIO_PIN_6
+#define HW_CFG2_Pin GPIO_PIN_3
 #define HW_CFG3_Pin GPIO_PIN_7
 /* USER CODE END Private defines */
 

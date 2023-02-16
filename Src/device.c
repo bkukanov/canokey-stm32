@@ -2,7 +2,7 @@
 #include "device-config.h"
 #include "main.h"
 #include "stm32l4xx_ll_gpio.h"
-#include "stm32l4xx_ll_lpuart.h"
+#include "stm32l4xx_ll_usart.h"
 #include "stm32l4xx_ll_rcc.h"
 #include "stm32l4xx_ll_tim.h"
 #include <admin.h>
@@ -31,7 +31,7 @@ void device_set_timeout(void (*callback)(void), uint16_t timeout) {
   const uint32_t prescaler = 4000;
   uint32_t counting_freq =
       HAL_RCC_GetPCLK1Freq() * (LL_RCC_GetAPB1Prescaler() == LL_RCC_APB1_DIV_1 ? 1 : 2) / prescaler;
-  DBG_MSG("counting_freq=%u\n", counting_freq);
+  // DBG_MSG("counting_freq=%u\n", counting_freq);
   if (timeout == 0) {
     HAL_TIM_Base_Stop_IT(&htim6);
     return;
@@ -61,36 +61,37 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 void GPIO_Touch_Calibrate(void) {
   uint32_t sum = 0;
-  for (int i = 0; i < CALI_TIMES; ++i) {
-    LL_GPIO_SetPinMode(TOUCH_GPIO_Port, TOUCH_Pin, GPIO_MODE_OUTPUT_PP);
-    LL_GPIO_SetOutputPin(TOUCH_GPIO_Port, TOUCH_Pin);
+  // for (int i = 0; i < CALI_TIMES; ++i) {
+  //   LL_GPIO_SetPinMode(TOUCH_GPIO_Port, TOUCH_Pin, GPIO_MODE_OUTPUT_PP);
+  //   LL_GPIO_SetOutputPin(TOUCH_GPIO_Port, TOUCH_Pin);
 
-    // charging the capacitor (human body)
-    for (int j = 0; j < 100; ++j)
-      asm volatile("nop");
+  //   // charging the capacitor (human body)
+  //   for (int j = 0; j < 100; ++j)
+  //     asm volatile("nop");
 
-    __disable_irq();
-    // measure the time of discharging
-    LL_GPIO_SetPinMode(TOUCH_GPIO_Port, TOUCH_Pin, GPIO_MODE_INPUT);
-    while ((LL_GPIO_ReadInputPort(TOUCH_GPIO_Port) & TOUCH_Pin) && sum < UNTOUCHED_MAX_VAL * CALI_TIMES)
-      ++sum;
-    __enable_irq();
-    // DBG_MSG("val %u\n", sum);
-  }
-  if (sum == UNTOUCHED_MAX_VAL * CALI_TIMES) {
-    DBG_MSG("max limit exceeded, discarded. touch_threshold %u\n", touch_threshold);
-    return;
-  }
+    // __disable_irq();
+  //   // measure the time of discharging
+  //   LL_GPIO_SetPinMode(TOUCH_GPIO_Port, TOUCH_Pin, GPIO_MODE_INPUT);
+  //   while ((LL_GPIO_ReadInputPort(TOUCH_GPIO_Port) & TOUCH_Pin) && sum < UNTOUCHED_MAX_VAL * CALI_TIMES)
+  //     ++sum;
+    // __enable_irq();
+  //   DBG_MSG("val %u\n", sum);
+  // }
+  // if (sum == UNTOUCHED_MAX_VAL * CALI_TIMES) {
+  //   DBG_MSG("max limit exceeded, discarded. touch_threshold %u\n", touch_threshold);
+  //   return;
+  // }
 
-  touch_threshold = sum / CALI_TIMES * 2;
-  DBG_MSG("touch_threshold %u\n", touch_threshold);
+  // touch_threshold = sum / CALI_TIMES * 2;
+  // DBG_MSG("touch_threshold %u\n", touch_threshold);
 }
 
 static GPIO_PinState GPIO_Touched(void) {
+  // static bool is_pressed = false;
 // #ifdef DEBUG_OUTPUT
 //   // Emulate touch events with UART input
-//   if (LL_LPUART_IsActiveFlag_RXNE(DBG_UART.Instance)) {
-//     int data = LL_LPUART_ReceiveData8(DBG_UART.Instance);
+//   if (LL_USART_IsActiveFlag_RXNE(DBG_UART.Instance)) {
+//     int data = LL_USART_ReceiveData8(DBG_UART.Instance);
 //     // DBG_MSG("%x\n", data);
 //     if ('U' == data) return GPIO_PIN_SET;
 //   }
@@ -101,8 +102,7 @@ static GPIO_PinState GPIO_Touched(void) {
 //   // charging the capacitor (human body)
 //   for (int i = 0; i < 100; ++i)
 //     asm volatile("nop");
-
-//   __disable_irq();
+  // __disable_irq();
 //   // measure the time of discharging
 //   LL_GPIO_SetPinMode(TOUCH_GPIO_Port, TOUCH_Pin, GPIO_MODE_INPUT);
 //   while ((LL_GPIO_ReadInputPort(TOUCH_GPIO_Port) & TOUCH_Pin) /*  && counter <= touch_threshold */)
@@ -121,23 +121,46 @@ void led_on(void) { HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET); }
 void led_off(void) { HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET); }
 
 void device_periodic_task(void) {
-  static uint32_t last_touched_at = 0, deassert_at = ~0u;
+  enum {
+    TOUCH_STATE_IDLE,
+    TOUCH_STATE_DOWN,
+    TOUCH_STATE_ASSERT,
+    TOUCH_STATE_DEASSERT,
+  };
+  static uint32_t event_tick, fsm = TOUCH_STATE_IDLE;
   uint32_t tick = HAL_GetTick();
-  if (get_touch_result() == TOUCH_NO && GPIO_Touched()) {
-    if (tick < last_touched_at + TOUCH_GAP_TIME) {
-      // ignore freqent touch events
-      DBG_MSG("touch ignored\r\n");
-    } else {
-      set_touch_result(TOUCH_SHORT);
-      last_touched_at = tick;
-      deassert_at = tick + 2000;
+  switch (fsm)
+  {
+  case TOUCH_STATE_IDLE:
+    if(GPIO_Touched()) {
+      fsm = TOUCH_STATE_DOWN;
+      event_tick = tick;
     }
-  }
-  if (tick > deassert_at) {
-    DBG_MSG("auto de-assert, measured val: %u\r\n", measure_touch);
-    measure_touch = 0;
-    set_touch_result(TOUCH_NO);
-    deassert_at = ~0u;
+    break;
+  case TOUCH_STATE_DOWN:
+    if(!GPIO_Touched()) {
+      fsm = TOUCH_STATE_IDLE;
+    } else if (tick - event_tick > 50) {
+      set_touch_result(TOUCH_SHORT);
+      fsm = TOUCH_STATE_ASSERT;
+      event_tick = tick;
+    }
+    break;
+  case TOUCH_STATE_ASSERT:
+    if (tick - event_tick > TOUCH_GAP_TIME) {
+      set_touch_result(TOUCH_NO);
+      fsm = TOUCH_STATE_DEASSERT;
+      DBG_MSG("touch deassert, max value measured: %u\r\n", measure_touch);
+    }
+    break;
+  case TOUCH_STATE_DEASSERT:
+    if(!GPIO_Touched()) {
+      measure_touch = 0;
+      fsm = TOUCH_STATE_IDLE;
+    }
+    break;
+  default:
+    break;
   }
   device_update_led();
 }
