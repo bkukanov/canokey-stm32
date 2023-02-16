@@ -12,7 +12,7 @@
             "cwd": "${workspaceFolder}",
             "runToEntryPoint": "main",
             "executable": "./build/canokey.elf",
-            "device": "STM32L432KBU6",
+            "device": "STM32L432KCU6",
             "configFiles": [
                 "interface/stlink-dap.cfg",
                 "target/stm32l4x.cfg"

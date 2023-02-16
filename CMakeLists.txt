@@ -42,9 +42,8 @@ add_custom_target(gitrev
         )
 
 set_target_properties(canokey PROPERTIES
-        SUFFIX .elf
+    SUFFIX .elf
     )
-    
 add_custom_command(TARGET canokey POST_BUILD
     COMMAND "${CROSS_COMPILE}size" canokey.elf)
 # add_custom_command(TARGET canokey POST_BUILD

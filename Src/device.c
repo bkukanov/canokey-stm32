@@ -102,19 +102,18 @@ static GPIO_PinState GPIO_Touched(void) {
 //   // charging the capacitor (human body)
 //   for (int i = 0; i < 100; ++i)
 //     asm volatile("nop");
-
   // __disable_irq();
 //   // measure the time of discharging
 //   LL_GPIO_SetPinMode(TOUCH_GPIO_Port, TOUCH_Pin, GPIO_MODE_INPUT);
 //   while ((LL_GPIO_ReadInputPort(TOUCH_GPIO_Port) & TOUCH_Pin) /*  && counter <= touch_threshold */)
 //     ++counter;
-  // __enable_irq();
+//   __enable_irq();
 
 //   if (counter > measure_touch) measure_touch = counter;
 //   return counter > touch_threshold ? GPIO_PIN_SET : GPIO_PIN_RESET;
-  // return (0  == (LL_GPIO_ReadInputPort(TOUCH_GPIO_Port) & TOUCH_Pin));;
-  return !HAL_GPIO_ReadPin(TOUCH_GPIO_Port, TOUCH_Pin);
 
+  // return !HAL_GPIO_ReadPin(TOUCH_GPIO_Port, TOUCH_Pin);
+  return (0  == (LL_GPIO_ReadInputPort(TOUCH_GPIO_Port) & TOUCH_Pin));
 }
 
 void led_on(void) { HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET); }
