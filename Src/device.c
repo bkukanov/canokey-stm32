@@ -2,7 +2,7 @@
 #include "device-config.h"
 #include "main.h"
 #include "stm32l4xx_ll_gpio.h"
-#include "stm32l4xx_ll_lpuart.h"
+#include "stm32l4xx_ll_usart.h"
 #include "stm32l4xx_ll_rcc.h"
 #include "stm32l4xx_ll_tim.h"
 #include <admin.h>
