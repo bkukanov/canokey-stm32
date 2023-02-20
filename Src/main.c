@@ -345,10 +345,10 @@ int main(void) {
         // set_nfc_state(in_nfc_mode); // comment out this line to emulate NFC mode with USB connection
       }
     } else {
-      if ((i & ((1 << 23) - 1)) == 0) {
-        DBG_MSG("Touch calibrating...\n");
-        // GPIO_Touch_Calibrate();
-      }
+      // if ((i & ((1 << 23) - 1)) == 0) {
+      //   DBG_MSG("Touch calibrating...\n");
+      //   // GPIO_Touch_Calibrate();
+      // }
       device_loop(1);
       ++i;
     }
@@ -372,7 +372,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END LPUART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 921600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;

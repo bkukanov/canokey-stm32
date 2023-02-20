@@ -75,6 +75,13 @@ void SystemClock_CustomConfig(bool nfc_low_power, bool pll_reconfig);
 #define HW_CFG1_Pin GPIO_PIN_5
 #define HW_CFG2_Pin GPIO_PIN_6
 #define HW_CFG3_Pin GPIO_PIN_7
+#ifdef DEBUG
+#define DBG(...)    printf(__VA_ARGS__);\
+                    printf("\n");
+#else
+#define DBG(...)
+
+#endif
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

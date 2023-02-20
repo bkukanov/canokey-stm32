@@ -124,7 +124,7 @@ void device_periodic_task(void) {
   if (get_touch_result() == TOUCH_NO && GPIO_Touched()) {
     if (tick < last_touched_at + TOUCH_GAP_TIME) {
       // ignore freqent touch events
-      DBG_MSG("touch ignored\r\n");
+      // DBG_MSG("touch ignored\r\n");
     } else {
       set_touch_result(TOUCH_SHORT);
       last_touched_at = tick;
@@ -132,7 +132,7 @@ void device_periodic_task(void) {
     }
   }
   if (tick > deassert_at) {
-    DBG_MSG("auto de-assert, measured val: %u\r\n", measure_touch);
+    // DBG_MSG("auto de-assert, measured val: %u\r\n", measure_touch);
     measure_touch = 0;
     set_touch_result(TOUCH_NO);
     deassert_at = ~0u;
